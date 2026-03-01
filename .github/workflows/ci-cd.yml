@@ -35,7 +35,6 @@ jobs:
   terraform:
     name: Apply infrastructure
     needs:
-      - tests
       - resolve-environment
     uses: ./.github/workflows/infra.yml
     with:

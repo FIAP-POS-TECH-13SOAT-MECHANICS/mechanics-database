@@ -27,11 +27,6 @@ jobs:
       - name: Get AWS Account ID
         run: echo "ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> $GITHUB_ENV
 
-      - name: Create bucket
-        run: |
-          BUCKET_NAME="fiap-mechanics-tf-${ACCOUNT_ID}"
-          aws s3 mb s3://${BUCKET_NAME} --region ${{ secrets.AWS_REGION }} || true
-
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
@@ -48,14 +43,3 @@ jobs:
         run: |
           cd infra &&
           terraform apply -var="environment=${{ inputs.environment }}" -auto-approve -lock-timeout=3m
-
-      - name: Update AWS Credentials for ESO
-        run: |
-          aws eks update-kubeconfig --name fiap-mechanics-${{ inputs.environment }}-cluster --region us-east-1
-          kubectl create secret generic aws-credentials \
-            --namespace external-secrets \
-            --from-literal=access-key-id="${{ secrets.AWS_ACCESS_KEY_ID }}" \
-            --from-literal=secret-access-key="${{ secrets.AWS_SECRET_ACCESS_KEY }}" \
-            --from-literal=session-token="${{ secrets.AWS_SESSION_TOKEN }}" \
-            --dry-run=client \
-            --output yaml | kubectl apply -f -
