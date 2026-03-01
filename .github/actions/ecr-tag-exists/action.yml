@@ -1,0 +1,35 @@
+name: ECR Tag Exists
+description: Checks if an image tag already exists in AWS ECR repository
+
+inputs:
+  environment:
+    description: Deployment environment (dev|stg|prod)
+    required: true
+  tag:
+    description: The tag to check
+    default: ${{ github.sha }}
+  aws-region:
+    description: AWS Region
+    required: true
+
+outputs:
+  image-exists:
+    description: Whether the image exists in ECR
+    value: ${{ steps.check-image.outputs.image-exists }}
+
+runs:
+  using: composite
+  steps:
+    - id: check-image
+      shell: bash
+      run: |
+        if aws ecr describe-images \
+          --repository-name "fiap-mechanics-${{ inputs.environment }}-cr" \
+          --image-ids imageTag="${{ inputs.tag }}" \
+          --region "${{ inputs.aws-region }}" \
+          > /dev/null 2>&1; then
+
+          echo "image-exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "image-exists=false" >> $GITHUB_OUTPUT
+        fi

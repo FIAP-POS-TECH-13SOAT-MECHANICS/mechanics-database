@@ -1,0 +1,26 @@
+name: Resolve environment from branch
+description: Maps GitHub branch to deployment environment
+
+outputs:
+  environment:
+    value: ${{ steps.resolve.outputs.environment }}
+    description: Resolved environment (dev|stg|prod)
+
+runs:
+  using: composite
+  steps:
+    - id: resolve
+      shell: bash
+      run: |
+        case "${GITHUB_REF_NAME}" in
+          develop) env="dev" ;;
+          release) env="stg" ;;
+          main) env="prod" ;;
+          *)
+            echo "Unsupported branch: ${GITHUB_REF_NAME}"
+            echo "Defaulting to 'dev' environment."
+            env="dev"
+            ;;
+        esac
+
+        echo "environment=$env" >> $GITHUB_OUTPUT

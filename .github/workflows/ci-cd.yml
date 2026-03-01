@@ -1,0 +1,43 @@
+name: CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - release
+      - develop
+  pull_request:
+    branches:
+      - main
+      - release
+      - develop
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  resolve-environment:
+    name: Resolve environment name
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.resolve.outputs.environment }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Resolve Environment
+        id: resolve
+        uses: ./.github/actions/resolve-environment
+
+  terraform:
+    name: Apply infrastructure
+    needs:
+      - tests
+      - resolve-environment
+    uses: ./.github/workflows/infra.yml
+    with:
+      environment: ${{ needs.resolve-environment.outputs.environment }}
+    secrets: inherit
