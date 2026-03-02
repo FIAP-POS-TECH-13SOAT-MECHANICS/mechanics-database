@@ -35,7 +35,7 @@ jobs:
           cd infra &&
           terraform init \
           -backend-config="bucket=fiap-mechanics-tf-${ACCOUNT_ID}" \
-          -backend-config="key=${{ inputs.environment }}.tfstate" \
+          -backend-config="key=network-${{ inputs.environment }}.tfstate" \
           -backend-config="region=${{ secrets.AWS_REGION }}" \
           -backend-config="encrypt=true"
 
