@@ -1,4 +1,4 @@
-name: Apply Infraestructure
+name: Apply Infrastructure
 
 on:
   workflow_call:
@@ -9,37 +9,43 @@ on:
         type: string
 
 jobs:
-  terraform:
+  shared:
     runs-on: ubuntu-latest
-    concurrency: infra-${{ inputs.environment }}
-
+    concurrency: infra-shared-${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v5
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v5
+      - uses: actions/checkout@v5
+        with:
+          repository: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra
+          path: infra-repo
+          ref: ${{ github.ref }}
+          token: ${{ secrets.INFRA_PAT }}
+      - uses: aws-actions/configure-aws-credentials@v5
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           aws-region: ${{ secrets.AWS_REGION }}
+      - uses: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra/.github/actions/apply-terraform-module@main
+        with:
+          environment: ${{ inputs.environment }}
+          module_name: shared
+          module_path: infra-repo/shared
 
-      - name: Get AWS Account ID
-        run: echo "ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)" >> $GITHUB_ENV
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Init terraform
-        run: |
-          cd infra &&
-          terraform init \
-          -backend-config="bucket=fiap-mechanics-tf-${ACCOUNT_ID}" \
-          -backend-config="key=network-${{ inputs.environment }}.tfstate" \
-          -backend-config="region=${{ secrets.AWS_REGION }}" \
-          -backend-config="encrypt=true"
-
-      - name: Apply terraform
-        run: |
-          cd infra &&
-          terraform apply -var="environment=${{ inputs.environment }}" -auto-approve -lock-timeout=3m
+  database:
+    needs: shared
+    runs-on: ubuntu-latest
+    concurrency: infra-database-${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: aws-actions/configure-aws-credentials@v5
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ secrets.AWS_REGION }}
+      - uses: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra/.github/actions/apply-terraform-module@main
+        with:
+          environment: ${{ inputs.environment }}
+          module_name: database
+          module_path: infra
