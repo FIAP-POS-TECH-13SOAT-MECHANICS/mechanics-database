@@ -2,10 +2,10 @@ resource "aws_db_instance" "database" {
   identifier              = "${local.prefix}-db"
   allocated_storage       = 20
   engine                  = "sqlserver-ex"
-  engine_version          = "15.00"
-  instance_class          = "db.t3.small"
+  engine_version          = var.db_engine_version
+  instance_class          = var.db_instance_class
   username                = random_string.database_user.result
-  password                = random_string.database_password.result
+  password                = random_password.database_password.result
   storage_encrypted       = true
   timezone                = "E. South America Standard Time"
   storage_type            = "gp3"
@@ -22,19 +22,19 @@ resource "aws_db_subnet_group" "mssql" {
   name        = "${local.prefix}-db"
   description = "Subnet group for RDS"
 
-  subnet_ids = local.public ? aws_subnet.public[*].id : aws_subnet.private[*].id
+  subnet_ids = local.public ? data.terraform_remote_state.shared.outputs.public_subnet_ids : data.terraform_remote_state.shared.outputs.private_subnet_ids
 }
 
 resource "aws_security_group" "mssql" {
   name        = "${local.prefix}-mssql-sg"
   description = "Security group for SQL Server"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = data.terraform_remote_state.shared.outputs.vpc_id
 
   ingress {
     from_port   = 1433
     to_port     = 1433
     protocol    = "tcp"
-    cidr_blocks = local.public ? ["0.0.0.0/0"] : [var.vpc_cidr]
+    cidr_blocks = local.public ? ["0.0.0.0/0"] : [data.terraform_remote_state.shared.outputs.vpc_cidr]
     description = local.public ? "SQL Server - Public Access" : "SQL Server - Internal VPC Only"
   }
 
