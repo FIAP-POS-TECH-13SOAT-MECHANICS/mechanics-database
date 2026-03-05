@@ -7,11 +7,6 @@ on:
       - main
       - release
       - develop
-  pull_request:
-    branches:
-      - main
-      - release
-      - develop
 
 permissions:
   contents: read
@@ -21,7 +16,6 @@ permissions:
 jobs:
   resolve-environment:
     name: Resolve environment name
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     outputs:
       environment: ${{ steps.resolve.outputs.environment }}
