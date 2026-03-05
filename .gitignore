@@ -1,2 +1,5 @@
 **/.terraform*
 !**/.terraform.lock.hcl
+
+# evita commitar cópia do repositório de infraestrutura
+mechanics-infra/
