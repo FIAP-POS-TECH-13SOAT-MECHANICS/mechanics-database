@@ -20,12 +20,12 @@ jobs:
           path: infra-repo
           ref: ${{ github.ref }}
           token: ${{ secrets.INFRA_PAT }}
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
       - uses: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra/.github/actions/apply-terraform-module@main
         with:
           environment: ${{ inputs.environment }}
@@ -38,12 +38,12 @@ jobs:
     concurrency: infra-database-${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v5
-      - uses: aws-actions/configure-aws-credentials@v5
+      - uses: aws-actions/configure-aws-credentials@v6
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ${{ vars.AWS_REGION }}
       - uses: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra/.github/actions/apply-terraform-module@main
         with:
           environment: ${{ inputs.environment }}
