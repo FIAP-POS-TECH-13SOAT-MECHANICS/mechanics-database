@@ -1,5 +1,7 @@
 resource "aws_secretsmanager_secret" "db_credentials" {
   name = "${local.prefix}-database"
+
+  recovery_window_in_days = 0
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials_value" {
