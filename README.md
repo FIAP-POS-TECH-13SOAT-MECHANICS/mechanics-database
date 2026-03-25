@@ -50,3 +50,8 @@ A pipeline executa os seguintes passos:
    - `develop` => `dev`
 2. Provisiona a camada `shared` do ambiente correspondente
 3. Provisiona o banco de dados
+
+
+## Diagrama desse projeto
+
+![Infraestructure](./images/database-diagram.png)
