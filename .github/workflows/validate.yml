@@ -16,9 +16,6 @@ jobs:
         service: ${{ fromJson(inputs.services) }}
     steps:
       - uses: actions/checkout@v5
-        with:
-          repository: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra
-          ref: ${{ github.ref_name }}
       - uses: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra/.github/actions/validate-terraform-module@main
         with:
           module_name: ${{ matrix.service.name }}
