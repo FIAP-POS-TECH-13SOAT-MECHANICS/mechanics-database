@@ -59,7 +59,7 @@ jobs:
     name: Apply databases infrastructure
     needs:
       - resolve-environment
-      - validate
+      - shared
       - discover
     uses: ./.github/workflows/apply-dbs.yml
     with:
