@@ -8,11 +8,16 @@
    - Colando no arquivo de configuração (se já existir): `notepad $ENV:USERPROFILE\.aws\credentials`;
 3. Utilize o script `initialize-database.ps1` para subir o ambiente na AWS.
 
-O comando abaixo sobe a instância para o serviço OrderApi no ambiente DEV.
-Execute na raiz do projeto.
+O exemplo abaixo mostra como subir o ambiente para o serviço WorkOrders no ambiente STG:
 
 ```powershell
-.\scripts\initialize-database.ps1 relational orders dev
+.\scripts\initialize-database.ps1 relational work-orders stg
+```
+
+O comando abaixo destroy todas as bases de dados no ambiente DEV:
+
+```powershell
+.\scripts\invoke-terraform.ps1 dev -destroy
 ```
 
 Os scripts são idempotentes, isto é, podem ser executados múltiplas vezes.
