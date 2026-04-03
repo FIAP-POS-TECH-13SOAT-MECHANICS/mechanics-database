@@ -1,0 +1,78 @@
+name: Database Job Summary
+description: Generates a markdown summary listing all databases applied
+
+inputs:
+  title:
+    description: Report title
+    default: Execution Summary
+  services:
+    description: JSON array of service objects (name, path, type)
+    required: true
+  github-token:
+    description: GitHub token for fetching job timings
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Fetch job timings
+      id: timings
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        gh api /repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs \
+          | jq '[.jobs[] | select(.name | test("Apply databases")) | {
+              name: .name,
+              conclusion: .conclusion,
+              duration: (
+                if .started_at != null and .completed_at != null
+                then ((.completed_at | fromdateiso8601) - (.started_at | fromdateiso8601))
+                else null end
+              )
+            }]' > /tmp/jobs.json
+
+    - name: Write summary
+      shell: bash
+      run: |
+        format_duration() {
+          local secs=$1
+          if [[ $secs -ge 3600 ]]; then
+            printf "%dh %dm %ds" $((secs/3600)) $(((secs%3600)/60)) $((secs%60))
+          elif [[ $secs -ge 60 ]]; then
+            printf "%dm %ds" $((secs/60)) $((secs%60))
+          else
+            printf "%ds" $secs
+          fi
+        }
+
+        TOTAL=$(jq '[.[].duration // 0] | add' /tmp/jobs.json)
+        TOTAL_FMT=$(format_duration $TOTAL)
+
+        cat >> $GITHUB_STEP_SUMMARY << EOF
+        # ${{ inputs.title }}
+
+        **Total time:** ${TOTAL_FMT}
+
+        ## Databases
+
+        EOF
+
+        echo '${{ inputs.services }}' | jq -r '.[] | .type + "|" + .name' | \
+          while IFS="|" read -r type name; do
+            job_name="Apply databases infrastructure / apply (${name}, ${type}/${name}, ${type})"
+
+            duration=$(jq -r \
+              --arg job "$job_name" \
+              '.[] | select(.name == $job) | .duration // 0' \
+              /tmp/jobs.json)
+            conclusion=$(jq -r \
+              --arg job "$job_name" \
+              '.[] | select(.name == $job) | .conclusion // "failure"' \
+              /tmp/jobs.json)
+
+            icon=$([[ "$conclusion" == "success" ]] && echo "✅" || echo "❌")
+            fmt=$(format_duration ${duration:-0})
+
+            echo "- ${icon} **${name}** (${type}): ${fmt}"
+          done >> $GITHUB_STEP_SUMMARY

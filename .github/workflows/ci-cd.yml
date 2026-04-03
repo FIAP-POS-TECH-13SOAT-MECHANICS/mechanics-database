@@ -20,17 +20,66 @@ jobs:
     outputs:
       environment: ${{ steps.resolve.outputs.environment }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v5
+      - uses: actions/checkout@v5
       - name: Resolve Environment
         id: resolve
         uses: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra/.github/actions/resolve-environment@main
 
-  terraform:
-    name: Apply infrastructure
+  discover:
+    name: Discover services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.list.outputs.services }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: List services
+        id: list
+        uses: ./.github/actions/discover-services
+
+  validate:
+    name: Validate infrastructure
+    needs:
+      - discover
+    uses: ./.github/workflows/validate.yml
+    with:
+      services: ${{ needs.discover.outputs.services }}
+    secrets: inherit
+
+  shared:
+    name: Apply shared infrastructure
     needs:
       - resolve-environment
-    uses: ./.github/workflows/infra.yml
+      - validate
+    uses: ./.github/workflows/apply-shared.yml
     with:
       environment: ${{ needs.resolve-environment.outputs.environment }}
     secrets: inherit
+
+  apply-databases:
+    name: Apply databases infrastructure
+    needs:
+      - resolve-environment
+      - shared
+      - discover
+    uses: ./.github/workflows/apply-dbs.yml
+    with:
+      environment: ${{ needs.resolve-environment.outputs.environment }}
+      services: ${{ needs.discover.outputs.services }}
+    secrets: inherit
+
+  database-report:
+    name: Create report
+    needs:
+      - resolve-environment
+      - discover
+      - apply-databases
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v5
+      - name: Generate report
+        uses: ./.github/actions/job-summary
+        with:
+          title: "Database Report - ${{ needs.resolve-environment.outputs.environment }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          services: ${{ needs.discover.outputs.services }}

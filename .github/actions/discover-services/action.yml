@@ -1,0 +1,20 @@
+name: Discover services
+description: Lists all service folders by the database type.
+
+outputs:
+  services:
+    description: JSON array of services
+    value: ${{ steps.list.outputs.services }}
+
+runs:
+  using: composite
+  steps:
+    - id: list
+      name: List services
+      shell: bash
+      run: |
+        services=$(ls -d {relational,no-sql}/*/ 2>/dev/null \
+          | sed 's|/$||' \
+          | jq -R '{ name: (split("/") | last), path: ., type: (split("/") | first) }' \
+          | jq -sc .)
+        echo "services=$services" >> $GITHUB_OUTPUT
