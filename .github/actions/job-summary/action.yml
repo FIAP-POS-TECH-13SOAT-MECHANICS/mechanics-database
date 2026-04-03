@@ -54,25 +54,28 @@ runs:
 
         **Total time:** ${TOTAL_FMT}
 
-        ## Databases
+        ## Jobs
 
         EOF
 
-        echo '${{ inputs.services }}' | jq -r '.[] | .type + "|" + .name' | \
-          while IFS="|" read -r type name; do
-            job_name="Apply databases infrastructure / apply (${name}, ${type}/${name}, ${type})"
+        jq -r '.[] | .conclusion + "|" + .name + "|" + (.duration // 0 | tostring)' \
+          /tmp/jobs.json | while IFS="|" read -r conclusion name duration; do
+          icon=$([[ "$conclusion" == "success" ]] && echo "✅" || echo "❌")
+          fmt=$(format_duration $duration)
+          echo "${icon} **${name}**: ${fmt}"
+        done >> $GITHUB_STEP_SUMMARY
 
-            duration=$(jq -r \
-              --arg job "$job_name" \
-              '.[] | select(.name == $job) | .duration // 0' \
-              /tmp/jobs.json)
-            conclusion=$(jq -r \
-              --arg job "$job_name" \
-              '.[] | select(.name == $job) | .conclusion // "failure"' \
-              /tmp/jobs.json)
+        cat >> $GITHUB_STEP_SUMMARY << 'EOF'
 
-            icon=$([[ "$conclusion" == "success" ]] && echo "✅" || echo "❌")
-            fmt=$(format_duration ${duration:-0})
+        ## Databases
 
-            echo "- ${icon} **${name}** (${type}): ${fmt}"
+        | Name | Type | Path |
+        |------|------|------|
+        EOF
+
+        REPO_URL="https://github.com/${{ github.repository }}/tree/${{ github.ref_name }}"
+
+        echo '${{ inputs.services }}' | jq -r '.[] | .name + "|" + .type + "|" + .path' | \
+          while IFS="|" read -r name type path; do
+            echo "| **${name}** | ${type} | [${path}](${REPO_URL}/${path}) |"
           done >> $GITHUB_STEP_SUMMARY
