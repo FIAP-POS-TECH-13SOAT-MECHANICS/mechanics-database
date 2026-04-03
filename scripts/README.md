@@ -8,11 +8,11 @@
    - Colando no arquivo de configuração (se já existir): `notepad $ENV:USERPROFILE\.aws\credentials`;
 3. Utilize o script `initialize-database.ps1` para subir o ambiente na AWS.
 
-O comando abaixo sobe a instância no ambiente DEV.
+O comando abaixo sobe a instância para o serviço OrderApi no ambiente DEV.
 Execute na raiz do projeto.
 
 ```powershell
-.\scripts\initialize-database.ps1 dev
+.\scripts\initialize-database.ps1 relational orders dev
 ```
 
 Os scripts são idempotentes, isto é, podem ser executados múltiplas vezes.

@@ -15,6 +15,6 @@ data "terraform_remote_state" "shared" {
 # locals
 
 locals {
-  prefix = "${data.terraform_remote_state.shared.outputs.project_name}-${var.environment}"
+  prefix = "${var.service_name}-${var.environment}"
   public = data.terraform_remote_state.shared.outputs.public_access
 }
