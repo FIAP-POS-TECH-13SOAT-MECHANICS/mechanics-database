@@ -60,7 +60,7 @@ runs:
 
         echo '${{ inputs.services }}' | jq -r '.[] | .type + "|" + .name' | \
           while IFS="|" read -r type name; do
-            job_name="Apply databases configuration ($type-$name)"
+            job_name="Apply databases infrastructure / apply (${name}, ${type}/${name}, ${type})"
 
             duration=$(jq -r \
               --arg job "$job_name" \
@@ -68,7 +68,7 @@ runs:
               /tmp/jobs.json)
             conclusion=$(jq -r \
               --arg job "$job_name" \
-              '.[] | select(.name == $job) | .conclusion' \
+              '.[] | select(.name == $job) | .conclusion // "failure"' \
               /tmp/jobs.json)
 
             icon=$([[ "$conclusion" == "success" ]] && echo "✅" || echo "❌")
