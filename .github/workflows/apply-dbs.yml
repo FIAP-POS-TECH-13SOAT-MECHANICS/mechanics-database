@@ -1,0 +1,35 @@
+name: Apply databases configuration
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment (dev|stg|prod)
+        required: true
+        type: string
+      services:
+        description: JSON array of service objects
+        required: true
+        type: string
+
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: ${{ fromJson(inputs.services) }}
+    concurrency: db-${{ matrix.service.type }}-${{ matrix.service.name }}-${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - uses: FIAP-POS-TECH-13SOAT-MECHANICS/mechanics-infra/.github/actions/apply-terraform-module@main
+        with:
+          environment: ${{ inputs.environment }}
+          module_name: ${{ matrix.service.type }}-${{ matrix.service.name }}
+          module_path: ${{ matrix.service.path }}
+          lock_timeout: 1m
