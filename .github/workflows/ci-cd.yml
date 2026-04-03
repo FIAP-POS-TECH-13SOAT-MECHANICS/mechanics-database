@@ -66,3 +66,20 @@ jobs:
       environment: ${{ needs.resolve-environment.outputs.environment }}
       services: ${{ needs.discover.outputs.services }}
     secrets: inherit
+
+  database-report:
+    name: Create report
+    needs:
+      - resolve-environment
+      - discover
+      - apply-databases
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - uses: actions/checkout@v5
+      - name: Generate report
+        uses: ./.github/actions/job-summary
+        with:
+          title: "Database Report - ${{ needs.resolve-environment.outputs.environment }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          services: ${{ needs.discover.outputs.services }}
