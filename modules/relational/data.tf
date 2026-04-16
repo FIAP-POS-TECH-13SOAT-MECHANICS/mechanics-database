@@ -17,4 +17,5 @@ data "terraform_remote_state" "shared" {
 locals {
   prefix = "${var.service_name}-${var.environment}"
   public = data.terraform_remote_state.shared.outputs.public_access
+  name   = var.database_name != null ? var.database_name : "mechanics-${var.service_name}"
 }

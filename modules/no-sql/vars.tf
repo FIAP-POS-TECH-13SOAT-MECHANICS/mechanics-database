@@ -6,6 +6,11 @@ variable "service_name" {
   type = string
 }
 
+variable "table_name" {
+  type    = string
+  default = null
+}
+
 variable "global_secondary_indexes" {
   description = "GSIs for the DynamoDB table"
   type = list(object({

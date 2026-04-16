@@ -51,7 +51,6 @@ foreach ($project in $projects) {
         }
 
         Write-Output "DONE"
-
     } -ArgumentList $workingDir, $bucketName, $dbType, $svcName, $environment, $action
 }
 
@@ -88,17 +87,15 @@ foreach ($job in $jobs) {
 Write-Host
 
 $succeeded = $jobs | Where-Object { $_.State -eq "Completed" }
-Write-Host -ForegroundColor Yellow "Execution finished. $($succeeded.Count) out of $($jobs.Count) jobs completed successfully."
+Write-Host -ForegroundColor Yellow "Execution finished. $($succeeded.Count) jobs completed."
 
 foreach ($job in $jobs) {
-    $isSuccess = $job.State -eq "Completed" -and (
-        Receive-Job -Job $job -Keep | Select-Object -Last 1
-    ) -eq "DONE"
+    $isSuccess = $job.State -eq "Completed" -and $job.ChildJobs[0].Output -contains "DONE"
 
     if ($isSuccess) {
-        Write-Host -ForegroundColor Green "$($job.Name)"
+        Write-Host -ForegroundColor Green $job.Name
     } else {
-        Write-Host -ForegroundColor Red   "$($job.Name) ($($job.State))"
+        Write-Host -ForegroundColor Red   "$($job.Name) (ERROR)"
     }
 }
 $jobs | Remove-Job
