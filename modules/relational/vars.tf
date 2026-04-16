@@ -1,9 +1,14 @@
 variable "environment" {
-  type    = string
+  type = string
 }
 
 variable "service_name" {
   type = string
+}
+
+variable "database_name" {
+  type    = string
+  default = null
 }
 
 variable "db_engine_version" {
