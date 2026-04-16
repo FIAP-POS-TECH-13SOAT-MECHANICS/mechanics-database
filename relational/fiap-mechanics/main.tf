@@ -3,4 +3,5 @@ module "database" {
 
   environment  = var.environment
   service_name = "fiap-mechanics"
+  database_name = "fiap-mechanics"
 }

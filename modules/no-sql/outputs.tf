@@ -6,6 +6,6 @@ output "service_name" {
   value = var.service_name
 }
 
-output "db_table_name" {
+output "table_name" {
   value = aws_dynamodb_table.database.name
 }

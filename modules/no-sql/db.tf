@@ -10,7 +10,7 @@ locals {
 }
 
 resource "aws_dynamodb_table" "database" {
-  name         = "${local.prefix}-db"
+  name         = var.table_name != null ? "${local.prefix}-${var.table_name}" : "${local.prefix}-db"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 

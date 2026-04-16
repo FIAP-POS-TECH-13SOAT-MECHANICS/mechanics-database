@@ -1,8 +1,9 @@
-module "database" {
+module "payments" {
   source = "../../modules/no-sql"
 
   environment  = var.environment
-  service_name = "budgets"
+  service_name = "billing"
+  table_name   = "payments"
 
   global_secondary_indexes = [
     {
