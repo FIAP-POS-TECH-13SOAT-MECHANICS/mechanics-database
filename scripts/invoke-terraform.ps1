@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory)]
-    [ValidateSet("dev", "stg", "prod", "")]
+    [ValidateSet("dev", "stg", "prod")]
     [string]$environment,
     [switch]$destroy
 )

@@ -14,7 +14,7 @@ O exemplo abaixo mostra como subir o ambiente para o serviço WorkOrders no ambi
 .\scripts\initialize-database.ps1 relational work-orders stg
 ```
 
-O comando abaixo destroy todas as bases de dados no ambiente DEV:
+O comando abaixo destrói todas as bases de dados no ambiente DEV:
 
 ```powershell
 .\scripts\invoke-terraform.ps1 dev -destroy
