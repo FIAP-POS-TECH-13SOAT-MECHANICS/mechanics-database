@@ -36,6 +36,7 @@ Os demais arquivos definem variáveis, outputs e geração de senhas.
   - Define valores utilizados em todo o projeto.
   - `environment`: define o ambiente, que pode ser `dev`, `stg` ou `prod`.
   - `service_name`: nome do serviço que utilizará o banco de dados.
+  - `database_name`: nome do banco de dados (se não informado, utiliza `mechanics-SERVICE`).
   - `db_engine_version`: versão do banco de dados. Padrão é `15.00`.
   - `db_instance_class`: classe da instância RDS. Padrão é `db.t3.small`.
 - [`providers.tf`](./providers.tf)

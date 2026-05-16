@@ -5,7 +5,7 @@ param (
     [Parameter(Mandatory)]
     [string]$serviceName,
     [Parameter(Mandatory)]
-    [ValidateSet("dev", "stg", "prod", "")]
+    [ValidateSet("dev", "stg", "prod")]
     [string]$environment)
 Write-Host -ForegroundColor Yellow "Updating database for service '$serviceName' in environment '$environment'..."
 $bucketName = "fiap-mechanics-tf-$(aws sts get-access-key-info --access-key-id $(aws configure get aws_access_key_id) --query Account --output text)"

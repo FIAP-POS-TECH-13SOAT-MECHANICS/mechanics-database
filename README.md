@@ -86,14 +86,20 @@ $bucketName = "fiap-mechanics-tf-$(aws sts get-access-key-info --access-key-id $
 $dbType = "relational" # pode ser "relational" ou "no-sql"
 $serviceName = "example-api" # nome do serviço que consumirá a instância
 
-terraform -chdir="./$dbType/$serviceName" init -backend-config="bucket=$bucketName" -backend-config="key=database-$environment.tfstate" -reconfigure
+terraform -chdir="./$dbType/$serviceName" init -backend-config="bucket=$bucketName" -backend-config="key=$dbType-$serviceName-$environment.tfstate" -reconfigure
 terraform -chdir="./$dbType/$serviceName" apply -var="environment=$environment"
 ```
 
-Esse processo também está disponível no [script](./scripts/README.md):
+Esse processo também está disponível via [scripts](./scripts/README.md):
 
 ```powershell
 .\scripts\initialize-database.ps1 relational example-api dev
+```
+
+Ou utilize o script `invoke-terraform` para criar/destruir todos os recursos presentes no repositório:
+
+```powershell
+.\scripts\invoke-terraform.ps1 dev # -destroy
 ```
 
 ## Pipeline de CI/CD

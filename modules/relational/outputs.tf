@@ -6,8 +6,12 @@ output "service_name" {
   value = var.service_name
 }
 
+output "database_name" {
+  value = local.name
+}
+
 output "db_connection_string" {
-  value = local.public ? "Server=${aws_db_instance.database.address},${aws_db_instance.database.port};Database=${var.service_name};User Id=${random_string.database_user.result};Password=${random_password.database_password.result};TrustServerCertificate=True;" : null
+  value = local.public ? "Server=${aws_db_instance.database.address},${aws_db_instance.database.port};Database=${local.name};User Id=${random_string.database_user.result};Password=${random_password.database_password.result};TrustServerCertificate=True;" : null
 
   sensitive = true
 }
