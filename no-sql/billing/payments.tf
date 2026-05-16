@@ -7,17 +7,27 @@ module "payments" {
 
   global_secondary_indexes = [
     {
-      name = "customerId-index"
+      name = "workOrderId-index"
       key_schema = [
-        { attribute_name = "customerId", key_type = "HASH" },
-        { attribute_name = "expirationDate", key_type = "RANGE" }
+        { attribute_name = "workOrderId", key_type = "HASH" },
       ]
     },
     {
-      name = "orderId-index"
+      name = "budgetId-index"
       key_schema = [
-        { attribute_name = "orderId", key_type = "HASH" },
-        { attribute_name = "expirationDate", key_type = "RANGE" }
+        { attribute_name = "budgetId", key_type = "HASH" },
+      ]
+    },
+    {
+      name = "externalReference-index"
+      key_schema = [
+        { attribute_name = "externalReference", key_type = "HASH" },
+      ]
+    },
+    {
+      name = "mercadoPagoPaymentId-index"
+      key_schema = [
+        { attribute_name = "mercadoPagoPaymentId", key_type = "HASH" },
       ]
     }
   ]

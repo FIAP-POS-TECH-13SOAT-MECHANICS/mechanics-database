@@ -7,17 +7,15 @@ module "budgets" {
 
   global_secondary_indexes = [
     {
-      name = "customerId-index"
+      name = "workOrderId-index"
       key_schema = [
-        { attribute_name = "customerId", key_type = "HASH" },
-        { attribute_name = "expirationDate", key_type = "RANGE" }
+        { attribute_name = "workOrderId", key_type = "HASH" },
       ]
     },
     {
-      name = "orderId-index"
+      name = "customerId-index"
       key_schema = [
-        { attribute_name = "orderId", key_type = "HASH" },
-        { attribute_name = "expirationDate", key_type = "RANGE" }
+        { attribute_name = "customerId", key_type = "HASH" },
       ]
     }
   ]
