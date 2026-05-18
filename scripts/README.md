@@ -22,6 +22,25 @@ O comando abaixo destrói todas as bases de dados no ambiente DEV:
 
 Os scripts são idempotentes, isto é, podem ser executados múltiplas vezes.
 
+## SonarQube (SQL Server)
+
+Para provisionar a instância RDS dedicada do SonarQube:
+
+```powershell
+.\scripts\initialize-database.ps1 relational sonarqube dev
+```
+
+Para criar/configurar o database do SonarQube na instância SQL Server (collation e `READ_COMMITTED_SNAPSHOT`), usando as credenciais da secret gerada pelo Terraform:
+
+```powershell
+.\scripts\bootstrap-sonarqube-sqlserver.ps1 `
+  -environment dev `
+  -serviceName sonarqube `
+  -databaseName sonarqube
+```
+
+Opcionalmente, é possível sobrescrever `-serverInstance`, `-adminUser` e `-adminPassword` manualmente.
+
 ## Permissão de execução de scripts
 
 No Windows, a execução de scripts do Powershell vem desabilitada por padrão.
