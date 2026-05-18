@@ -41,6 +41,11 @@ Para criar/configurar o database do SonarQube na instância SQL Server (collatio
 
 Opcionalmente, é possível sobrescrever `-serverInstance`, `-adminUser` e `-adminPassword` manualmente.
 
+Observação:
+
+- O módulo `relational/sonarqube` expõe `db_secret_name` em `outputs.tf`.
+- Esse output é consumido pela camada `sonarqube` do repositório `mechanics-infra` via `terraform_remote_state`.
+
 ## Permissão de execução de scripts
 
 No Windows, a execução de scripts do Powershell vem desabilitada por padrão.

@@ -14,13 +14,31 @@ param (
 )
 
 function Parse-ConnectionString([string]$connectionString) {
-    $builder = New-Object System.Data.Common.DbConnectionStringBuilder
-    $builder.ConnectionString = $connectionString
+    $parts = @{}
+
+    foreach ($segment in ($connectionString -split ";")) {
+        if ([string]::IsNullOrWhiteSpace($segment)) {
+            continue
+        }
+
+        $separatorIndex = $segment.IndexOf("=")
+        if ($separatorIndex -lt 1) {
+            continue
+        }
+
+        $key = $segment.Substring(0, $separatorIndex).Trim().ToLowerInvariant()
+        $value = $segment.Substring($separatorIndex + 1).Trim()
+        $parts[$key] = $value
+    }
+
+    $server = if ($parts.ContainsKey("server")) { $parts["server"] } elseif ($parts.ContainsKey("data source")) { $parts["data source"] } else { "" }
+    $userId = if ($parts.ContainsKey("user id")) { $parts["user id"] } elseif ($parts.ContainsKey("uid")) { $parts["uid"] } else { "" }
+    $password = if ($parts.ContainsKey("password")) { $parts["password"] } elseif ($parts.ContainsKey("pwd")) { $parts["pwd"] } else { "" }
 
     return @{
-        Server   = [string]$builder["Server"]
-        UserId   = [string]$builder["User Id"]
-        Password = [string]$builder["Password"]
+        Server   = [string]$server
+        UserId   = [string]$userId
+        Password = [string]$password
     }
 }
 
@@ -50,6 +68,16 @@ if ([string]::IsNullOrWhiteSpace($serverInstance) -or [string]::IsNullOrWhiteSpa
     $serverInstance = $parts.Server
     $adminUser = $parts.UserId
     $adminPassword = $parts.Password
+
+    if ([string]::IsNullOrWhiteSpace($serverInstance)) {
+        throw "Nao foi possivel extrair 'Server' da connection string da secret '$dbSecretName'."
+    }
+    if ([string]::IsNullOrWhiteSpace($adminUser)) {
+        throw "Nao foi possivel extrair 'User Id' da connection string da secret '$dbSecretName'."
+    }
+    if ([string]::IsNullOrWhiteSpace($adminPassword)) {
+        throw "Nao foi possivel extrair 'Password' da connection string da secret '$dbSecretName'."
+    }
 }
 
 $sqlFile = Join-Path $PSScriptRoot "sql/bootstrap-sonarqube.sql"
@@ -67,10 +95,15 @@ $sqlArgs = @(
     "-b",
     "-i", $sqlFile,
     "-v", "DB_NAME=$databaseName",
-    "-v", "DB_COLLATION=$databaseCollation",
-    "-v", "SONAR_LOGIN=$sonarLogin",
-    "-v", "SONAR_PASSWORD=$sonarPassword"
+    "-v", "DB_COLLATION=$databaseCollation"
 )
+
+if (-not [string]::IsNullOrWhiteSpace($sonarPassword)) {
+    $sqlArgs += @(
+        "-v", "SONAR_LOGIN=$sonarLogin",
+        "-v", "SONAR_PASSWORD=$sonarPassword"
+    )
+}
 
 & $sqlcmd.Source @sqlArgs
 if ($LASTEXITCODE -ne 0) {
