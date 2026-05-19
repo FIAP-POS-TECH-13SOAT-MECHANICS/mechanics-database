@@ -51,12 +51,3 @@ Import-Certificate -FilePath "$env:TEMP\aws-rds-global.crt" -CertStoreLocation "
 ```
 
 Para ambientes de desenvolvimento, é recomendável manter o `TrustServerCertificate=True;` na connectionString para também poder acessar instâncias locais (rodando em Docker Compose, por exemplo).
-
-## SonarQube em SQL Server
-
-Para SonarQube, alimente o módulo com um serviço dedicado (`relational/sonarqube`) e aplique o bootstrap SQL após o provisionamento:
-
-- collation da base em modo case-sensitive/accent-sensitive (ex.: `Latin1_General_CS_AS`);
-- `READ_COMMITTED_SNAPSHOT ON`.
-
-Script de apoio: [`scripts/bootstrap-sonarqube-sqlserver.ps1`](../scripts/bootstrap-sonarqube-sqlserver.ps1).
