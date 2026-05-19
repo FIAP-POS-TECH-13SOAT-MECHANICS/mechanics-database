@@ -30,7 +30,13 @@ Para provisionar a instância RDS dedicada do SonarQube:
 .\scripts\initialize-database.ps1 relational sonarqube dev
 ```
 
-Para criar/configurar o database do SonarQube na instância SQL Server (collation e `READ_COMMITTED_SNAPSHOT`), usando as credenciais da secret gerada pelo Terraform:
+O workflow de CI/CD deste repositório executa automaticamente o bootstrap do database do SonarQube
+logo após o `terraform apply` do serviço `relational/sonarqube`.
+
+Esse bootstrap cria/configura o database do SonarQube na instância SQL Server
+(collation e `READ_COMMITTED_SNAPSHOT`) usando as credenciais da secret gerada pelo Terraform.
+
+Para execução local/manual (reprocessamento):
 
 ```powershell
 .\scripts\bootstrap-sonarqube-sqlserver.ps1 `
