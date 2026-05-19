@@ -42,26 +42,9 @@ function Parse-ConnectionString([string]$connectionString) {
     }
 }
 
-function Get-SqlcmdExecutor {
-    $nativeSqlcmd = Get-Command sqlcmd -ErrorAction SilentlyContinue
-    if ($null -ne $nativeSqlcmd) {
-        return @{
-            Kind    = "native"
-            Command = $nativeSqlcmd.Source
-        }
-    }
-
-    $docker = Get-Command docker -ErrorAction SilentlyContinue
-    if ($null -eq $docker) {
-        throw "sqlcmd nao encontrado. Instale SQL Server Command Line Utilities ou Docker."
-    }
-
-    Write-Host -ForegroundColor Yellow "sqlcmd nao encontrado localmente. Usando container mcr.microsoft.com/mssql-tools."
-
-    return @{
-        Kind    = "docker"
-        Command = $docker.Source
-    }
+$sqlcmd = Get-Command sqlcmd -ErrorAction SilentlyContinue
+if ($null -eq $sqlcmd) {
+    throw "sqlcmd nao encontrado. Instale o SQL Server Command Line Utilities."
 }
 
 if ([string]::IsNullOrWhiteSpace($serverInstance) -or [string]::IsNullOrWhiteSpace($adminUser) -or [string]::IsNullOrWhiteSpace($adminPassword)) {
@@ -104,57 +87,25 @@ if (-not (Test-Path $sqlFile)) {
 
 Write-Host -ForegroundColor Yellow "Aplicando bootstrap SonarQube em SQL Server..."
 
-${commonSqlArgs} = @(
+$sqlArgs = @(
     "-S", $serverInstance,
     "-U", $adminUser,
     "-P", $adminPassword,
     "-d", "master",
     "-b",
+    "-i", $sqlFile,
     "-v", "DB_NAME=$databaseName",
     "-v", "DB_COLLATION=$databaseCollation"
 )
 
 if (-not [string]::IsNullOrWhiteSpace($sonarPassword)) {
-    $commonSqlArgs += @(
+    $sqlArgs += @(
         "-v", "SONAR_LOGIN=$sonarLogin",
         "-v", "SONAR_PASSWORD=$sonarPassword"
     )
 }
 
-${executor} = Get-SqlcmdExecutor
-
-if ($executor.Kind -eq "native") {
-    $sqlArgs = $commonSqlArgs + @("-i", $sqlFile)
-
-    & $executor.Command @sqlArgs
-} else {
-    $sqlFileName = Split-Path -Leaf $sqlFile
-    $sqlDirectory = Split-Path -Parent $sqlFile
-    $mountedSqlFile = "/sql/$sqlFileName"
-
-    $dockerSqlCmdCandidates = @(
-        "/opt/mssql-tools18/bin/sqlcmd",
-        "/opt/mssql-tools/bin/sqlcmd"
-    )
-
-    $dockerCommand = "set -e; "
-    $dockerCommand += "if [ -x {0} ]; then SQLCMD={0}; elif [ -x {1} ]; then SQLCMD={1}; else echo 'sqlcmd nao encontrado no container'; exit 1; fi; " -f $dockerSqlCmdCandidates[0], $dockerSqlCmdCandidates[1]
-    $dockerCommand += "`"$`SQLCMD`" "
-    $dockerCommand += ($commonSqlArgs + @("-i", $mountedSqlFile) | ForEach-Object { "'" + ($_ -replace "'", "'\\''") + "'" }) -join " "
-
-    $dockerArgs = @(
-        "run",
-        "--rm",
-        "-v", "${sqlDirectory}:/sql:ro",
-        "mcr.microsoft.com/mssql-tools",
-        "bash",
-        "-lc",
-        $dockerCommand
-    )
-
-    & $executor.Command @dockerArgs
-}
-
+& $sqlcmd.Source @sqlArgs
 if ($LASTEXITCODE -ne 0) {
     throw "Falha ao executar bootstrap do SonarQube no SQL Server."
 }

@@ -115,7 +115,6 @@ A pipeline executa os seguintes passos:
 2. Executa `terraform validate` para confirmar que o código está correto
 3. Provisiona a camada `shared` do ambiente correspondente
 4. Provisiona todos os bancos de dados definidos no repositório
-   - Para `relational/sonarqube`, executa automaticamente o bootstrap SQL pós-provisionamento
 
 > A implantação só é realizada se *todos* os scripts Terraform do repositório forem validados com sucesso.
 
