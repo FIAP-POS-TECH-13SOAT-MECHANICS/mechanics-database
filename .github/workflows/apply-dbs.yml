@@ -33,3 +33,11 @@ jobs:
           module_name: ${{ matrix.service.type }}-${{ matrix.service.name }}
           module_path: ${{ matrix.service.path }}
           lock_timeout: 1m
+      - name: Bootstrap SonarQube SQL Server database
+        if: matrix.service.type == 'relational' && matrix.service.name == 'sonarqube'
+        shell: pwsh
+        run: |
+          ./scripts/bootstrap-sonarqube-sqlserver.ps1 `
+            -environment "${{ inputs.environment }}" `
+            -serviceName "sonarqube" `
+            -databaseName "sonarqube"
